@@ -16,8 +16,20 @@ class EmployeViewSet(viewsets.ModelViewSet):
         Les dirigeants peuvent voir tous les employés.
         """
         queryset = super().get_queryset()
+       # Filtrer par poste
+        poste = self.request.query_params.get('poste')
+        if poste:
+            queryset = queryset.filter(poste__icontains=poste)
+
+        # Filtrer par date d'embauche
+        date_embauche = self.request.query_params.get('date_embauche')
+        if date_embauche:
+            queryset = queryset.filter(date_embauche=date_embauche)
+
+        # Restriction pour les utilisateurs non dirigeants
         if not self.request.user.groups.filter(name='Dirigeant').exists():
             queryset = queryset.filter(id=self.request.user.id)
+
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -51,6 +63,22 @@ class CongeViewSet(viewsets.ModelViewSet):
         """
         queryset = super().get_queryset()
 
+         # Filtrer par employé
+        employe_id = self.request.query_params.get('employe_id')
+        if employe_id:
+            queryset = queryset.filter(employe_id=employe_id)
+
+        # Filtrer par type de congé
+        type_conge = self.request.query_params.get('type_conge')
+        if type_conge:
+            queryset = queryset.filter(type_conge=type_conge)
+
+        # Filtrer par statut
+        statut = self.request.query_params.get('statut')
+        if statut:
+            queryset = queryset.filter(statut=statut)
+
+        # Restriction pour les employés non dirigeants
         if not self.request.user.groups.filter(name='Dirigeant').exists():
             try:
                 employe = Employe.objects.get(user=self.request.user)
